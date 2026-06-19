@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Heart, Flag } from "lucide-react";
+import { Heart, Flag, X } from "lucide-react";
 import { toast } from "sonner";
 import { toggleFavoriteAction } from "@/features/social/favorites.actions";
 import { submitReportAction } from "@/features/social/reports.actions";
+import { Button } from "@/components/ui/Button";
 
 interface SocialActionsProps {
   propertyId: string;
@@ -22,18 +23,14 @@ export function SocialActions({ propertyId, initialIsFavorited, isLoggedIn }: So
       toast.error("Please log in to save properties.");
       return;
     }
-
-    // Optimistic update
     setIsFavorited(!isFavorited);
-
     startTransition(async () => {
       const result = await toggleFavoriteAction(propertyId);
       if (result.error) {
-        // Revert on error
         setIsFavorited(isFavorited);
         toast.error(result.error);
       } else {
-        toast.success(result.isFavorited ? "Property saved!" : "Property removed from saved.");
+        toast.success(result.isFavorited ? "Property saved!" : "Removed from saved.");
       }
     });
   };
@@ -44,12 +41,9 @@ export function SocialActions({ propertyId, initialIsFavorited, isLoggedIn }: So
       toast.error("Please log in to report listings.");
       return;
     }
-
     const formData = new FormData(e.currentTarget);
     formData.append("propertyId", propertyId);
-
     const result = await submitReportAction(null, formData);
-    
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -64,36 +58,40 @@ export function SocialActions({ propertyId, initialIsFavorited, isLoggedIn }: So
         <button
           onClick={handleFavorite}
           disabled={isPending}
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
+          className={`p-2.5 rounded-2xl flex items-center justify-center transition-all ${
             isFavorited
-              ? "bg-rose-50 text-rose-500 border border-rose-100"
-              : "bg-white text-slate-400 border border-slate-200 hover:bg-slate-50 hover:text-rose-400"
+              ? "bg-rose-500/20 text-rose-500"
+              : "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20"
           }`}
           aria-label="Save property"
         >
           <Heart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
         </button>
-        
+
         <button
           onClick={() => setShowReportModal(true)}
-          className="w-12 h-12 rounded-2xl bg-white text-slate-400 border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:text-danger transition-all shadow-sm"
+          className="p-2.5 rounded-2xl bg-white/10 text-white/70 hover:bg-white/20 hover:text-white border border-white/20 flex items-center justify-center transition-all"
           aria-label="Report listing"
         >
           <Flag className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Simple Report Modal */}
       {showReportModal && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Report Listing</h3>
-            <p className="text-slate-500 text-sm mb-6">Let us know what's wrong with this listing. Our team will investigate.</p>
-            
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl animate-scale-in border border-violet-100">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-extrabold text-slate-900">Report Listing</h3>
+              <button onClick={() => setShowReportModal(false)} className="p-1.5 rounded-xl hover:bg-violet-50 text-slate-400 hover:text-slate-600 transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-500 mb-6 font-medium">Let us know what&apos;s wrong with this listing. Our team will investigate.</p>
+
             <form onSubmit={handleReport} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Reason</label>
-                <select name="reason" required className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Reason</label>
+                <select name="reason" required className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400">
                   <option value="">Select a reason</option>
                   <option value="fake_listing">Fake Listing</option>
                   <option value="scam">Scam / Fraud</option>
@@ -102,28 +100,28 @@ export function SocialActions({ propertyId, initialIsFavorited, isLoggedIn }: So
                   <option value="other">Other</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Additional Details</label>
-                <textarea 
-                  name="details" 
-                  rows={3} 
-                  className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
+                <label className="block text-sm font-bold text-slate-700 mb-1.5">Additional Details</label>
+                <textarea
+                  name="details"
+                  rows={3}
+                  className="w-full border-2 border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 resize-none"
                   placeholder="Please provide any additional context..."
-                ></textarea>
+                />
               </div>
-              
+
               <div className="flex gap-3 pt-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowReportModal(false)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-medium text-slate-600 hover:bg-slate-50"
+                  className="flex-1 px-4 py-3 rounded-2xl border-2 border-slate-200 font-extrabold text-sm text-slate-600 hover:bg-violet-50 hover:border-violet-200 transition-all"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-3 rounded-xl bg-danger text-white font-medium hover:bg-danger/90"
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-pink-600 text-white font-extrabold text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md"
                 >
                   Submit Report
                 </button>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -54,17 +55,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className={inter.className}>
-        {children}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              fontFamily: "var(--font-inter)",
-            },
-          }}
-          richColors
-          closeButton
-        />
+        <AuthProvider>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                fontFamily: "var(--font-inter)",
+              },
+            }}
+            richColors
+            closeButton
+          />
+        </AuthProvider>
       </body>
     </html>
   );

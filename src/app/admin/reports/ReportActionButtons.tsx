@@ -27,7 +27,7 @@ export function ReportActionButtons({ reportId }: { reportId: string }) {
       <Button 
         variant="outline" 
         size="sm" 
-        className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
+        className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 rounded-xl font-extrabold"
         onClick={handleResolve}
         disabled={isProcessing}
       >
@@ -36,7 +36,7 @@ export function ReportActionButtons({ reportId }: { reportId: string }) {
       <Button 
         variant="outline" 
         size="sm" 
-        className="text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        className="text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-xl font-extrabold"
         onClick={handleDismiss}
         disabled={isProcessing}
       >

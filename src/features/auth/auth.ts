@@ -108,11 +108,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
-      if (user) {
-        // First login — set user data in token
+    async jwt({ token, user, trigger }) {
+      // On first sign-in OR when session.update() is called, fetch fresh data from DB
+      if (user || trigger === "update") {
         await connectToDatabase();
-        const dbUser = await User.findOne({ email: user.email });
+        const dbUser = await User.findOne({ email: token.email });
         if (dbUser) {
           token.id = dbUser._id.toString();
           token.role = dbUser.role;

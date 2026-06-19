@@ -29,7 +29,7 @@ export function AdminApproveRejectButtons({ propertyId }: { propertyId: string }
       <Button 
         variant="outline" 
         size="sm" 
-        className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
+        className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 rounded-xl font-extrabold"
         onClick={handleApprove}
         disabled={isApproving || isRejecting}
       >
@@ -38,7 +38,7 @@ export function AdminApproveRejectButtons({ propertyId }: { propertyId: string }
       <Button 
         variant="outline" 
         size="sm" 
-        className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
+        className="text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 rounded-xl font-extrabold"
         onClick={handleReject}
         disabled={isApproving || isRejecting}
       >

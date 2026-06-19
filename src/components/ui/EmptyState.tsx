@@ -26,22 +26,22 @@ export function EmptyState({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 min-h-[300px] ${className}`}
+      className={`flex flex-col items-center justify-center p-8 text-center rounded-3xl border-2 border-dashed border-violet-200 bg-violet-50/30 min-h-[300px] ${className}`}
     >
-      <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-6">
-        <Icon className="w-8 h-8 text-slate-400" />
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center mb-6">
+        <Icon className="w-8 h-8 text-violet-400" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-2">{title}</h3>
-      <p className="text-slate-500 max-w-sm mb-6">{description}</p>
+      <h3 className="text-xl font-extrabold text-slate-900 mb-2">{title}</h3>
+      <p className="text-slate-500 max-w-sm mb-6 font-medium">{description}</p>
       {actionLabel && actionHref && (
         <Link href={actionHref}>
-          <Button variant="primary">
+          <Button variant="primary" className="rounded-2xl">
             {actionLabel}
           </Button>
         </Link>
       )}
       {actionLabel && onAction && !actionHref && (
-        <Button onClick={onAction} variant="primary">
+        <Button onClick={onAction} variant="primary" className="rounded-2xl">
           {actionLabel}
         </Button>
       )}

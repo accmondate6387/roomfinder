@@ -105,7 +105,9 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/login" || pathname === "/register") {
     const sessionToken = getSessionToken(request);
     if (sessionToken) {
-      return NextResponse.redirect(new URL("/properties", request.url));
+      // We can't decode the encrypted JWT in Edge, so redirect to a
+      // catch-all that server-side auth() will handle the role-based split
+      return NextResponse.redirect(new URL("/", request.url));
     }
   }
 

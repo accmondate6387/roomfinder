@@ -1,104 +1,104 @@
 import { auth } from "@/features/auth/auth";
 import { redirect } from "next/navigation";
-import { OwnerService } from "@/features/owner/owner.service";
+import { connectToDatabase } from "@/lib/db/connection";
+import OwnerVerification from "@/lib/db/models/OwnerVerification";
 import { VerificationForm } from "@/components/forms/VerificationForm";
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { ShieldCheck, Clock, XCircle } from "lucide-react";
-import { format } from "date-fns";
+import { Shield, ShieldCheck, ShieldAlert, Clock, Sparkles } from "lucide-react";
 
 export const metadata = {
-  title: "Owner Verification - RoomFinder",
-  description: "Verify your account to publish listings.",
+  title: "Verification - Owner Dashboard",
+  description: "Verify your identity as a property owner.",
 };
 
-export default async function OwnerVerificationPage() {
+export default async function VerificationPage() {
   const session = await auth();
 
   if (!session?.user) redirect("/login");
   if (session.user.role !== "owner") redirect("/");
 
-  const verification = await OwnerService.getVerificationStatus(session.user.id);
-  const isVerified = (session.user as any).isOwnerVerified; // This needs to match the user session type
+  await connectToDatabase();
+
+  const existingVerification = await OwnerVerification.findOne({
+    owner: session.user.id,
+  }).lean();
+
+  const serializedVerification = existingVerification ? JSON.parse(JSON.stringify(existingVerification)) : null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Owner Verification</h1>
-        <p className="text-slate-500 mt-2">
-          Verifying your account builds trust with students and allows you to publish your listings live on the platform.
-        </p>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-md">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-slate-900">Owner Verification</h1>
+        </div>
+        <p className="text-slate-500 text-sm font-medium ml-[52px]">Verify your identity to build trust with students.</p>
       </div>
 
-      {isVerified ? (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-8 text-center space-y-4">
-          <div className="mx-auto bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center">
-            <ShieldCheck className="text-emerald-600 h-8 w-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-emerald-900">You are a Verified Owner!</h2>
-          <p className="text-emerald-700 max-w-md mx-auto">
-            Your identity has been verified by our team. The "Verified Owner" badge is now displayed on all your property listings.
-          </p>
-        </div>
-      ) : verification ? (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Verification Status</h2>
-            <StatusBadge status={verification.status} />
-          </div>
-          
-          <div className="p-6">
-            {verification.status === "pending" && (
-              <div className="text-center space-y-4 py-8">
-                <div className="mx-auto bg-amber-50 w-16 h-16 rounded-full flex items-center justify-center">
-                  <Clock className="text-amber-500 h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900">Verification Pending</h3>
-                <p className="text-slate-500 max-w-md mx-auto">
-                  We have received your documents and are currently reviewing them. This usually takes 24-48 hours.
+      <div className="bg-white rounded-3xl border border-violet-100 p-6 shadow-md shadow-violet-50">
+        {!serializedVerification && (
+          <div className="space-y-6">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0 shadow-md">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-extrabold text-blue-900 text-sm">Why verify?</p>
+                <p className="text-sm text-blue-700 mt-0.5 font-medium">
+                  Verified owners get a badge, higher search ranking, and increased trust from students.
                 </p>
-                <div className="mt-6 pt-6 border-t border-slate-100 text-sm text-slate-500 flex flex-col gap-2 items-center">
-                  <p>Submitted on: {format(new Date(verification.createdAt), "PPP")}</p>
-                  <p>ID Proof Type: <span className="uppercase">{verification.idProofType}</span></p>
-                </div>
               </div>
-            )}
-
-            {verification.status === "rejected" && (
-              <div className="space-y-6">
-                <div className="bg-rose-50 border border-rose-200 rounded-lg p-6 flex gap-4 items-start">
-                  <XCircle className="text-rose-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-rose-900 mb-1">Verification Rejected</h3>
-                    <p className="text-rose-700 text-sm mb-3">
-                      Unfortunately, we could not verify your identity based on the documents provided.
-                    </p>
-                    {verification.adminNote && (
-                      <div className="bg-white/50 p-3 rounded border border-rose-200/50 text-sm text-rose-800">
-                        <span className="font-medium block mb-1">Reason:</span>
-                        {verification.adminNote}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="border-t border-slate-100 pt-6">
-                  <h3 className="font-semibold text-slate-900 mb-4">Submit Again</h3>
-                  <VerificationForm />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-900">Submit Details</h2>
-          </div>
-          <div className="p-6">
+            </div>
             <VerificationForm />
           </div>
-        </div>
-      )}
+        )}
+
+        {serializedVerification?.status === "pending" && (
+          <div className="text-center py-10">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center mx-auto mb-5">
+              <Clock className="w-10 h-10 text-amber-500" />
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900 mb-2">Verification in Progress</h3>
+            <p className="text-slate-500 max-w-md mx-auto font-medium">
+              Your documents are being reviewed by our team. This usually takes 24-48 hours.
+            </p>
+          </div>
+        )}
+
+        {serializedVerification?.status === "approved" && (
+          <div className="text-center py-10">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mx-auto mb-5">
+              <ShieldCheck className="w-10 h-10 text-emerald-500" />
+            </div>
+            <h3 className="text-xl font-extrabold text-slate-900 mb-2">You&apos;re Verified!</h3>
+            <p className="text-slate-500 max-w-md mx-auto font-medium">
+              Your identity has been verified. Students can see your verified badge on listings.
+            </p>
+          </div>
+        )}
+
+        {serializedVerification?.status === "rejected" && (
+          <div className="space-y-6">
+            <div className="text-center py-6">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center mx-auto mb-5">
+                <ShieldAlert className="w-10 h-10 text-rose-500" />
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-900 mb-2">Verification Rejected</h3>
+              {serializedVerification.adminNote && (
+                <p className="text-slate-500 max-w-md mx-auto bg-rose-50 border border-rose-200 rounded-2xl p-4 mt-4 text-sm font-medium">
+                  <span className="font-extrabold text-rose-700">Reason: </span>
+                  {serializedVerification.adminNote}
+                </p>
+              )}
+            </div>
+            <div className="border-t border-violet-100 pt-6">
+              <p className="text-sm font-bold text-slate-700 mb-4">Submit a new verification request with corrected documents:</p>
+              <VerificationForm />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
